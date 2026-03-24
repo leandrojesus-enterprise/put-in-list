@@ -193,7 +193,21 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["2"] = func() {
-		fmt.Println("option 2")
+		fmt.Println("Available lists:")
+		for listName := range storedLists.Lists {
+			fmt.Printf(" - %s\n", listName)
+		}
+		
+		fmt.Print("Enter the name of the list you want to set as active: ")
+		var listName string
+		fmt.Scanln(&listName)
+
+		if _, exists := storedLists.Lists[listName]; exists {
+			storedLists.ActiveList = listName
+			saveJson(storedLists)
+		} else {
+			fmt.Printf("List '%s' does not exist!\n", listName)
+		}	
 	}
 
 	mainMenuChoices["3"] = func() {
