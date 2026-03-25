@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 )
 
 var Reset = "\033[0m"
@@ -227,7 +228,24 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["7"] = func() {
-		fmt.Println("option 7")
+		fmt.Print("Enter the name of the package you want to search for in all lists: ")
+		var packageName string
+		fmt.Scanln(&packageName)
+		packageName = strings.ToLower(packageName)
+		
+		found := false
+		for listName, packages := range storedLists.Lists {
+			for _, pkg := range packages {
+				if pkg == packageName {
+					fmt.Printf("Package '%s' found in list '%s'\n", packageName, listName)
+					found = true
+				}
+			}
+		}
+
+		if !found {
+			fmt.Printf("Package '%s' not found in any list.\n", packageName)
+		}
 	}
 
 	mainMenuChoices["8"] = func() {
