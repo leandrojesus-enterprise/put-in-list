@@ -290,7 +290,60 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["4"] = func() {
-		fmt.Println("option 4")
+		if storedLists.ActiveList == "None" {
+			fmt.Println("Erro: nenhuma lista ativa. Use opção 2 para definir uma lista.")
+			return
+		}
+
+		entries, ok := storedLists.Lists[storedLists.ActiveList]
+		if !ok {
+			fmt.Printf("Erro: lista ativa '%s' não existe.\n", storedLists.ActiveList)
+			return
+		}
+
+		if len(entries) == 0 {
+			fmt.Printf("Lista '%s' está vazia.\n", storedLists.ActiveList)
+			return
+		}
+
+		for i := len(entries) - 1; i >= 0; i-- {
+			entry := entries[i]
+			fmt.Printf("Desinstalando '%s' com '%s'...\n", entry.Name, entry.Installer)
+
+			var cmd *exec.Cmd
+			switch entry.Installer {
+			case "winget":
+				cmd = exec.Command("winget", "uninstall", entry.Name)
+			case "choco":
+				cmd = exec.Command("choco", "uninstall", entry.Name, "-y")
+			case "apt":
+				cmd = exec.Command("sudo", "apt", "remove", "-y", entry.Name)
+			case "snap":
+				cmd = exec.Command("snap", "remove", entry.Name)
+			default:
+				fmt.Printf("Instalador '%s' não suportado para o pacote '%s'.\n", entry.Installer, entry.Name)
+				continue
+			}
+
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+
+			if err := cmd.Run(); err != nil {
+				fmt.Printf("Falha ao desinstalar '%s': %v\n", entry.Name, err)
+				continue
+			}
+
+			fmt.Printf("'%s' desinstalado com sucesso.\n", entry.Name)
+
+			entries = append(entries[:i], entries[i+1:]...)
+		}
+
+		storedLists.Lists[storedLists.ActiveList] = entries
+		saveListsJson(storedLists)
+
+		if len(entries) == 0 {
+			fmt.Printf("Todos os pacotes removidos da lista '%s'.\n", storedLists.ActiveList)
+		}
 	}
 
 	mainMenuChoices["5"] = func() {
