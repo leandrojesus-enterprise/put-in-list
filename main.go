@@ -289,7 +289,65 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["5"] = func() {
-		fmt.Println("option 5")
+		// Check if an installer is selected
+		if config.CurrentInstaller == "None" {
+			fmt.Println("Error: No package installer selected. Please choose one in option 6 first.")
+			return
+		}
+
+		// Check if an active list is set
+		if storedLists.ActiveList == "None" {
+			fmt.Println("Error: No active list set. Please set one in option 2 first.")
+			return
+		}
+
+		// Prompt for the package name
+		fmt.Print("Enter the name of the package to install: ")
+		var pkg string
+		fmt.Scanln(&pkg)
+		if pkg == "" {
+			fmt.Println("Error: Package name cannot be empty.")
+			return
+		}
+
+		fmt.Printf("Installing package '%s' using '%s'...\n", pkg, config.CurrentInstaller)
+
+		// Prepare the install command based on the selected installer
+		var cmd *exec.Cmd
+		switch config.CurrentInstaller {
+		case "winget":  // Windows
+			cmd = exec.Command("winget", "install", pkg)
+		case "snap":  // Linux
+			cmd = exec.Command("snap", "install", pkg)
+		default:
+			fmt.Printf("Installer '%s' not supported for installation in this implementation.\n", config.CurrentInstaller)
+			return
+		}
+
+		// Run the command and capture output
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Printf("Failed to install '%s': %s\nOutput: %s\n", pkg, err, string(output))
+			fmt.Println("Package not added to the active list due to installation failure.")
+			return
+		}
+
+		// Installation succeeded
+		fmt.Printf("Successfully installed '%s'.\n", pkg)
+
+		// Check if the package is already in the active list
+		activePackages := storedLists.Lists[storedLists.ActiveList]
+		for _, existingPkg := range activePackages {
+			if existingPkg == pkg {
+				fmt.Printf("Package '%s' is already in the active list '%s'. Not adding duplicate.\n", pkg, storedLists.ActiveList)
+				return
+			}
+		}
+
+		// Add the package to the active list and save
+		storedLists.Lists[storedLists.ActiveList] = append(activePackages, pkg)
+		saveListsJson(storedLists)
+		fmt.Printf("Package '%s' added to the active list '%s'.\n", pkg, storedLists.ActiveList)
 	}
 
 	mainMenuChoices["6"] = func() {
