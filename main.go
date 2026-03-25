@@ -20,6 +20,17 @@ var Cyan = "\033[36m"
 var Gray = "\033[37m"
 var White = "\033[97m"
 
+type Config struct {
+	CurrentInstaller string `json:"currentInstaller"`
+}
+
+var config Config
+
+var supportedInstallers = map[string][]string{
+	"windows": {"winget", "choco"},
+	"linux":   {"apt", "snap"},
+}
+
 type StoredLists struct {
 	ActiveList string              `json:"activeList"`
 	Lists      map[string][]string `json:"lists"`
@@ -61,6 +72,24 @@ func _init() {
 		exit(1)
 	}
 
+	config = Config{CurrentInstaller: "None"}
+
+	cfgFile, err := os.Open("config.json")
+	if err != nil {
+		fmt.Println("config.json não existe, criando com None.")
+		pause()
+		saveConfig(config)
+	} else {
+		byteValue, err := io.ReadAll(cfgFile)
+		if err != nil {
+			fmt.Println("Erro ler config.json:", err)
+			pause()
+			exit(1)
+		}
+		cfgFile.Close()
+		json.Unmarshal(byteValue, &config)
+	}
+
 	storedLists = StoredLists{}
 	storedLists.Lists = make(map[string][]string)
 
@@ -75,7 +104,7 @@ func _init() {
 			Lists:      map[string][]string{},
 		}
 
-		saveJson(storedLists)
+		saveListsJson(storedLists)
 	} else {
 		// Read opened file as a byte array
 		byteValue, err := io.ReadAll(jsonFile)
@@ -97,7 +126,7 @@ func _init() {
 	setupMainMenuChoices()
 }
 
-func saveJson(data StoredLists) {
+func saveListsJson(data StoredLists) {
 	// Convert data structure to JSON
 	byteValue, err := json.Marshal(data)
 	if err != nil {
@@ -111,6 +140,21 @@ func saveJson(data StoredLists) {
 	err = os.WriteFile("lists.json", byteValue, 0644)
 	if err != nil {
 		fmt.Println(err)
+		pause()
+		exit(1)
+	}
+}
+
+func saveConfig(data Config) {
+	byteValue, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		fmt.Println("Erro marshal config:", err)
+		pause()
+		exit(1)
+	}
+	err = os.WriteFile("config.json", byteValue, 0644)
+	if err != nil {
+		fmt.Println("Erro escrever config.json:", err)
 		pause()
 		exit(1)
 	}
@@ -165,6 +209,21 @@ func currentOSSupported() bool {
 	return isSupported
 }
 
+func detectAvailableInstallers(osName string) []string {
+	available := []string{}
+	supported, ok := supportedInstallers[osName]
+	if !ok {
+		return available
+	}
+
+	for _, tool := range supported {
+		if _, err := exec.LookPath(tool); err == nil {
+			available = append(available, tool)
+		}
+	}
+	return available
+}
+
 func setupClearTerminal() {
 	clearTerminalFunc = make(map[string]func())
 
@@ -190,7 +249,7 @@ func setupMainMenuChoices() {
 
 		storedLists.Lists[listName] = []string{}
 
-		saveJson(storedLists)
+		saveListsJson(storedLists)
 	}
 
 	mainMenuChoices["2"] = func() {
@@ -198,17 +257,17 @@ func setupMainMenuChoices() {
 		for listName := range storedLists.Lists {
 			fmt.Printf(" - %s\n", listName)
 		}
-		
+
 		fmt.Print("Enter the name of the list you want to set as active: ")
 		var listName string
 		fmt.Scanln(&listName)
 
 		if _, exists := storedLists.Lists[listName]; exists {
 			storedLists.ActiveList = listName
-			saveJson(storedLists)
+			saveListsJson(storedLists)
 		} else {
 			fmt.Printf("List '%s' does not exist!\n", listName)
-		}	
+		}
 	}
 
 	mainMenuChoices["3"] = func() {
@@ -222,7 +281,7 @@ func setupMainMenuChoices() {
 			if len(packages) > 0 {
 				fmt.Printf("   Packages: %s\n", strings.Join(packages, ", "))
 			}
-		}	
+		}
 	}
 
 	mainMenuChoices["4"] = func() {
@@ -234,7 +293,38 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["6"] = func() {
-		fmt.Println("option 6")
+		supported := supportedInstallers[currentOS]
+		available := detectAvailableInstallers(currentOS)
+
+		fmt.Printf("Instaladores suportados para %s: %s\n", currentOS, strings.Join(supported, ", "))
+		if len(available) == 0 {
+			fmt.Println("Nenhum instalador detectado disponível no PATH.")
+			fmt.Println("Para usar a opção, instale um deles ou adicione ao PATH.")
+			return
+		}
+
+		fmt.Println("Instaladores detectados disponíveis:")
+		for i, tool := range available {
+			currentMark := ""
+			if tool == config.CurrentInstaller {
+				currentMark = " (atual)"
+			}
+			fmt.Printf("%d) %s%s\n", i+1, tool, currentMark)
+		}
+
+		fmt.Print("Escolha o número do instalador para definir como atual: ")
+		var opt int
+		_, err := fmt.Scanln(&opt)
+		if err != nil || opt < 1 || opt > len(available) {
+			fmt.Println("Escolha inválida.")
+			return
+		}
+
+		selected := available[opt-1]
+		config.CurrentInstaller = selected
+		saveConfig(config)
+
+		fmt.Printf("Instalador atual definido: %s\n", selected)
 	}
 
 	mainMenuChoices["7"] = func() {
