@@ -173,7 +173,7 @@ func showMainMenu() {
 	fmt.Printf("4 %v»%v Uninstall List\n", Green, Reset)
 	fmt.Printf("%v-------------------------%v\n", Green, Reset)
 	fmt.Printf("5 %v»%v Install Package/s\n", Green, Reset)
-	fmt.Printf("6 %v»%v Choose Current Package Installer\n", Green, Reset)
+	fmt.Printf("6 %v»%v Choose Current Package Installer %v[%v Current: %s %v]%v\n", Green, Reset, Green, Reset, config.CurrentInstaller, Green, Reset)
 	fmt.Printf("7 %v»%v Search For Package In a List\n", Green, Reset)
 	fmt.Printf("%v-------------------------%v\n", Green, Reset)
 	fmt.Printf("8 %v»%v Exit\n\n", Green, Reset)
