@@ -31,9 +31,14 @@ var supportedInstallers = map[string][]string{
 	"linux":   {"apt", "snap"},
 }
 
+type InstallEntry struct {
+	Name      string `json:"name"`
+	Installer string `json:"installer"`
+}
+
 type StoredLists struct {
-	ActiveList string              `json:"activeList"`
-	Lists      map[string][]string `json:"lists"`
+	ActiveList string                    `json:"activeList"`
+	Lists      map[string][]InstallEntry `json:"lists"`
 }
 
 var loadedLists StoredLists
@@ -91,7 +96,7 @@ func _init() {
 	}
 
 	storedLists = StoredLists{}
-	storedLists.Lists = make(map[string][]string)
+	storedLists.Lists = make(map[string][]InstallEntry)
 
 	//Check if lists.json is created
 	jsonFile, err := os.Open("lists.json")
@@ -101,7 +106,7 @@ func _init() {
 
 		storedLists = StoredLists{
 			ActiveList: "None",
-			Lists:      map[string][]string{},
+			Lists:      map[string][]InstallEntry{},
 		}
 
 		saveListsJson(storedLists)
@@ -247,7 +252,7 @@ func setupMainMenuChoices() {
 		var listName string
 		fmt.Scanln(&listName)
 
-		storedLists.Lists[listName] = []string{}
+		storedLists.Lists[listName] = []InstallEntry{}
 
 		saveListsJson(storedLists)
 	}
@@ -272,14 +277,14 @@ func setupMainMenuChoices() {
 
 	mainMenuChoices["3"] = func() {
 		fmt.Println("Lists:")
-		for listName, packages := range storedLists.Lists {
+		for listName, entries := range storedLists.Lists {
 			activeMarker := ""
 			if listName == storedLists.ActiveList {
 				activeMarker = " (active)"
 			}
 			fmt.Printf(" - %s%s\n", listName, activeMarker)
-			if len(packages) > 0 {
-				fmt.Printf("   Packages: %s\n", strings.Join(packages, ", "))
+			for _, entry := range entries {
+				fmt.Printf("   - %s (%s)\n", entry.Name, entry.Installer)
 			}
 		}
 	}
@@ -332,17 +337,17 @@ func setupMainMenuChoices() {
 
 		fmt.Printf("'%s' instalado com sucesso.\n", pkg)
 
-		activePackages := storedLists.Lists[storedLists.ActiveList]
-		for _, existing := range activePackages {
-			if existing == pkg {
-				fmt.Printf("'%s' já existe na lista ativa '%s'.\n", pkg, storedLists.ActiveList)
+		activeEntries := storedLists.Lists[storedLists.ActiveList]
+		for _, existing := range activeEntries {
+			if existing.Name == pkg && existing.Installer == config.CurrentInstaller {
+				fmt.Printf("'%s' já existe na lista ativa '%s' com instalador '%s'.\n", pkg, storedLists.ActiveList, config.CurrentInstaller)
 				return
 			}
 		}
 
-		storedLists.Lists[storedLists.ActiveList] = append(activePackages, pkg)
+		storedLists.Lists[storedLists.ActiveList] = append(activeEntries, InstallEntry{Name: pkg, Installer: config.CurrentInstaller})
 		saveListsJson(storedLists)
-		fmt.Printf("'%s' adicionado à lista ativa '%s'.\n", pkg, storedLists.ActiveList)
+		fmt.Printf("'%s' [%s] adicionado à lista ativa '%s'.\n", pkg, config.CurrentInstaller, storedLists.ActiveList)
 	}
 
 	mainMenuChoices["6"] = func() {
@@ -387,10 +392,10 @@ func setupMainMenuChoices() {
 		packageName = strings.ToLower(packageName)
 
 		found := false
-		for listName, packages := range storedLists.Lists {
-			for _, pkg := range packages {
-				if pkg == packageName {
-					fmt.Printf("Package '%s' found in list '%s'\n", packageName, listName)
+		for listName, entries := range storedLists.Lists {
+			for _, entry := range entries {
+				if strings.ToLower(entry.Name) == packageName {
+					fmt.Printf("Package '%s' found in list '%s' (installer=%s)\n", packageName, listName, entry.Installer)
 					found = true
 				}
 			}
