@@ -212,7 +212,17 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["3"] = func() {
-		fmt.Println("option 3")
+		fmt.Println("Lists:")
+		for listName, packages := range storedLists.Lists {
+			activeMarker := ""
+			if listName == storedLists.ActiveList {
+				activeMarker = " (active)"
+			}
+			fmt.Printf(" - %s%s\n", listName, activeMarker)
+			if len(packages) > 0 {
+				fmt.Printf("   Packages: %s\n", strings.Join(packages, ", "))
+			}
+		}	
 	}
 
 	mainMenuChoices["4"] = func() {
@@ -232,7 +242,7 @@ func setupMainMenuChoices() {
 		var packageName string
 		fmt.Scanln(&packageName)
 		packageName = strings.ToLower(packageName)
-		
+
 		found := false
 		for listName, packages := range storedLists.Lists {
 			for _, pkg := range packages {
