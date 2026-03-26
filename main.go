@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -358,21 +359,42 @@ func setupMainMenuChoices() {
 		}
 
 		fmt.Print("Nome do pacote para instalar: ")
-		var pkg string
-		fmt.Scanln(&pkg)
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan() // use `for scanner.Scan()` to keep reading
+		pkg := scanner.Text()
+
 		if strings.TrimSpace(pkg) == "" {
 			fmt.Println("Nome do pacote não pode ser vazio.")
 			return
 		}
+		
+		var classicInstallFlag = false
+		pkgSplit := strings.Split(pkg, " ")
+		pkgName := pkgSplit[0]
+		
+		var pkgArg string = ""
+		if len(pkgSplit) >= 2 {
+			pkgArg = pkgSplit[1]
+		}
 
-		fmt.Printf("Instalando '%s' com %s...\n", pkg, config.CurrentInstaller)
+		if len(pkgSplit) == 2 {
+			if pkgArg == "--classic"{
+				classicInstallFlag = true
+			}
+		}
+
+		fmt.Printf("Instalando '%s' com %s...\n", pkgName, config.CurrentInstaller)
 
 		var cmd *exec.Cmd
 		switch config.CurrentInstaller {
 		case "winget":
 			cmd = exec.Command("winget", "install", pkg)
 		case "snap":
-			cmd = exec.Command("snap", "install", pkg)
+			if classicInstallFlag {
+				cmd = exec.Command("snap", "install", pkgName, "--classic")
+			} else {
+				cmd = exec.Command("snap", "install", pkgName)
+			}
 		default:
 			fmt.Printf("Instalador '%s' não suportado.\n", config.CurrentInstaller)
 			return
@@ -383,24 +405,24 @@ func setupMainMenuChoices() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			fmt.Printf("Falha ao instalar '%s': %v\n", pkg, err)
+			fmt.Printf("Falha ao instalar '%s': %v\n", pkgName, err)
 			fmt.Println("Não será adicionado à lista ativa.")
 			return
 		}
 
-		fmt.Printf("'%s' instalado com sucesso.\n", pkg)
+		fmt.Printf("'%s' instalado com sucesso.\n", pkgName)
 
 		activeEntries := storedLists.Lists[storedLists.ActiveList]
 		for _, existing := range activeEntries {
 			if existing.Name == pkg && existing.Installer == config.CurrentInstaller {
-				fmt.Printf("'%s' já existe na lista ativa '%s' com instalador '%s'.\n", pkg, storedLists.ActiveList, config.CurrentInstaller)
+				fmt.Printf("'%s' já existe na lista ativa '%s' com instalador '%s'.\n", pkgName, storedLists.ActiveList, config.CurrentInstaller)
 				return
 			}
 		}
 
-		storedLists.Lists[storedLists.ActiveList] = append(activeEntries, InstallEntry{Name: pkg, Installer: config.CurrentInstaller})
+		storedLists.Lists[storedLists.ActiveList] = append(activeEntries, InstallEntry{Name: pkgName, Installer: config.CurrentInstaller})
 		saveListsJson(storedLists)
-		fmt.Printf("'%s' [%s] adicionado à lista ativa '%s'.\n", pkg, config.CurrentInstaller, storedLists.ActiveList)
+		fmt.Printf("'%s' [%s] adicionado à lista ativa '%s'.\n", pkgName, config.CurrentInstaller, storedLists.ActiveList)
 	}
 
 	mainMenuChoices["6"] = func() {
