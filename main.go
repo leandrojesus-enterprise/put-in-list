@@ -269,15 +269,28 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["2"] = func() {
-		fmt.Println("Available lists:")
+		fmt.Println("Available lists ordered by index:")
+		i := 1
 		for listName := range storedLists.Lists {
-			fmt.Printf(" - %s\n", listName)
+			fmt.Printf(" %d - %s\n", i, listName)
+			i++
 		}
 
-		fmt.Print("Enter the name of the list you want to set as active: ")
-		var listName string
-		fmt.Scanln(&listName)
+		fmt.Print("Enter the index of the list you want to set as active: ")
+		var listIndex int
+		fmt.Scanln(&listIndex)
 
+		if listIndex < 1 || listIndex > len(storedLists.Lists) {
+			fmt.Println("Invalid list index!")
+			return
+		}
+
+		listNames := make([]string, 0, len(storedLists.Lists))
+		for name := range storedLists.Lists {
+			listNames = append(listNames, name)
+		}
+
+		listName := listNames[listIndex-1]
 		if _, exists := storedLists.Lists[listName]; exists {
 			storedLists.ActiveList = listName
 			saveListsJson(storedLists)
