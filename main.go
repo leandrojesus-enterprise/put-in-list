@@ -304,7 +304,22 @@ func setupMainMenuChoices() {
 
 		if len(entries) == 0 {
 			fmt.Printf("Lista '%s' está vazia.\n", storedLists.ActiveList)
+			fmt.Println("Do you want to delete the list? (y/n)")
+			var response string
+			fmt.Scanln(&response)
+			if strings.ToLower(response) == "y" {
+				delete(storedLists.Lists, storedLists.ActiveList)
+				storedLists.ActiveList = "None"
+				saveListsJson(storedLists)
+			}
 			return
+		} else {
+			fmt.Println("Do you really want to uninstall this list? this will unistall all packages in the list.")
+			var response string
+			fmt.Scanln(&response)
+			if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
+				return
+			}
 		}
 
 		for i := len(entries) - 1; i >= 0; i-- {
