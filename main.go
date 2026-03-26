@@ -253,6 +253,16 @@ func setupMainMenuChoices() {
 		var listName string
 		fmt.Scanln(&listName)
 
+		if strings.TrimSpace(listName) == "" {
+			fmt.Println("List name cannot be empty.")
+			return
+		}
+		
+		if _, exists := storedLists.Lists[listName]; exists {
+			fmt.Printf("List '%s' already exists!\n", listName)
+			return
+		}
+
 		storedLists.Lists[listName] = []InstallEntry{}
 
 		saveListsJson(storedLists)
@@ -314,12 +324,21 @@ func setupMainMenuChoices() {
 			}
 			return
 		} else {
-			fmt.Println("Do you really want to uninstall this list? this will unistall all packages in the list.")
+			fmt.Print("Do you really want to uninstall this list? this will unistall all packages in the list.")
 			var response string
 			fmt.Scanln(&response)
 			if strings.ToLower(response) != "y" && strings.ToLower(response) != "yes" {
 				return
 			}
+
+			fmt.Print("Do you want to remove the list? (y/n)")
+			fmt.Scanln(&response)
+			if strings.ToLower(response) == "y" || strings.ToLower(response) == "yes" {
+				delete(storedLists.Lists, storedLists.ActiveList)
+				storedLists.ActiveList = "None"
+				saveListsJson(storedLists)
+			}
+			
 		}
 
 		for i := len(entries) - 1; i >= 0; i-- {
