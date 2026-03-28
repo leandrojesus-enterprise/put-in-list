@@ -519,6 +519,36 @@ func setupMainMenuChoices() {
 				if strings.ToLower(entry.Name) == packageName {
 					fmt.Printf("Package '%s' found in list '%s' (installer=%s)\n", packageName, listName, entry.Installer)
 					found = true
+					fmt.Print("Do you want to uninstall it? (y/n): ")
+					var confirm string
+					fmt.Scanln(&confirm)
+					if strings.ToLower(confirm) == "y" {
+						uninstallPackageIndividually(entry)
+						
+						// Remove the package from the list
+						updatedEntries := []InstallEntry{}
+						for _, e := range entries {
+							if !(strings.ToLower(e.Name) == packageName && e.Installer == entry.Installer) {
+								updatedEntries = append(updatedEntries, e)
+							}
+						}
+						storedLists.Lists[listName] = updatedEntries
+						saveListsJson(storedLists)
+						fmt.Printf("Package '%s' removed from list '%s'.\n", packageName, listName)
+						
+						//If list is empty after removal, ask if user wants to delete the list
+						if len(updatedEntries) == 0 {
+							fmt.Printf("List '%s' is now empty. Do you want to delete it? (y/n): ", listName)
+							var delConfirm string
+							fmt.Scanln(&delConfirm)
+							if strings.ToLower(delConfirm) == "y" {
+								delete(storedLists.Lists, listName)
+								saveListsJson(storedLists)
+								fmt.Printf("List '%s' deleted.\n", listName)
+							}
+						}
+						break
+					}
 				}
 			}
 		}
@@ -532,6 +562,35 @@ func setupMainMenuChoices() {
 		exit(0)
 	}
 }
+
+func uninstallPackageIndividually(entry InstallEntry) {
+	fmt.Printf("Uninstalling '%s' with '%s'...\n", entry.Name, entry.Installer)
+	
+	var cmd *exec.Cmd
+	switch entry.Installer {
+	case "winget":
+		cmd = exec.Command("winget", "uninstall", entry.Name)
+	case "choco":
+		cmd = exec.Command("choco", "uninstall", entry.Name, "-y")
+	case "apt":
+		cmd = exec.Command("sudo", "apt", "remove", "-y", entry.Name)
+	case "snap":
+		cmd = exec.Command("snap", "remove", entry.Name)
+	default:
+		fmt.Printf("Installer '%s' not supported for package '%s'.\n", entry.Installer, entry.Name)
+		return
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Failed to uninstall '%s': %v\n", entry.Name, err)
+		return
+	}
+
+	fmt.Printf("'%s' uninstalled successfully.\n", entry.Name)
+}		
 
 func exit(status int) {
 	fmt.Println("Exiting the app!")
