@@ -92,11 +92,11 @@ Choose from existing lists by index.
 
 ### 📦 Install a package
 ```
-Nome do pacote para instalar: vscode
+Name of the package that you want to install: vscode
 ```
 
 For snap classic installs:
-```bash
+```bash 
 code --classic
 ```
 
@@ -122,17 +122,40 @@ Enter the name of the package: vscode
 
 ## 💡 Use Cases
 
-- 🧑‍💻 Quickly set up a new development environment  
-- 🔄 Reinstall your favorite tools after OS reinstall  
-- 🧹 Clean up systems with bulk uninstall  
-- 📦 Maintain reproducible software setups  
+ - 🧑‍💻 Quick development environment setup (soon)
+ 
+   - Install all your tools (VSCode, Git, Node, etc.) in one go.
+
+ - 🔄 Restore your setup after OS reinstall (soon)
+ 
+   - No need to remember every app — everything is saved in a list.
+
+- 🧹 Bulk software cleanup
+
+   - Uninstall dozens of applications at once.
+
+- 📦 Reproducible environments (soon)
+
+   - Keep consistent setups across different machines.
+
+- 🧪 Testing different environments (soon)
+                           
+  - Create separate lists for different stacks (e.g., backend, frontend, DevOps).
+
+- 🧑‍🏫 Teaching / Workshops (soon)
+
+  - Share a list with all required tools for students or participants.
+
+- 🧰 Personal software management
+
+  - Keep an organized record of what you use and with which installer. 
 
 ---
 
 ## 🔧 Tech Stack
 
 - Go (Golang)  
-- Standard Library only (no external dependencies)
+- Standard Library only (no external dependencies) til today.
 
 ---
 
