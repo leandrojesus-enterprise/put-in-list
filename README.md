@@ -22,10 +22,10 @@
 
 ### Windows
 - `winget`
-- `choco`
+- `choco` (soon)
 
 ### Linux
-- `apt`
+- `apt` (soon)
 - `snap`
 
 > The app automatically detects available installers in your system `PATH`.
