@@ -194,6 +194,7 @@ type Config struct {
 }
 
 var config Config
+var firstRun bool = false
 
 var supportedInstallers = map[string][]string{
 	"windows": {"winget", "choco"},
@@ -253,6 +254,7 @@ func _init() {
 		fmt.Println(trans("config_not_found"))
 		pause()
 		saveConfig(config)
+		firstRun = true
 	} else {
 		byteValue, err := io.ReadAll(cfgFile)
 		if err != nil {
@@ -346,7 +348,14 @@ func clearTerminal() {
 }
 
 func showMainMenu() {
-	fmt.Printf("           %v{%v %s %v}%v\n\n", Green, Reset, trans("welcome"), Green, Reset)
+	if !firstRun {
+		fmt.Printf("           %v{%v %s %v}%v\n\n", Green, Reset, trans("welcome"), Green, Reset)
+		fmt.Println("          Press <Enter> to continue...")
+		fmt.Scanln()
+		clearTerminal()
+	}
+	
+	fmt.Printf("%v{%v Put In List %v}%v\n\n", Green, Reset, Green, Reset)
 	fmt.Printf("1 %v»%v %s\n", Green, Reset, trans("create_list"))
 	fmt.Printf("2 %v»%v %s %v[%v Current: %s %v]%v\n", Green, Reset, trans("set_list_active"), Green, Reset, storedLists.ActiveList, Green, Reset)
 	fmt.Printf("3 %v»%v %s\n", Green, Reset, trans("show_lists"))
