@@ -759,6 +759,11 @@ func setupMainMenuChoices() {
 
 		fmt.Printf(trans("language_changed"), currentLang)
 	}
+
+	mainMenuChoices["9"] = func() {
+		fmt.Print(trans("exit_app"))
+		exit(0)
+	}
 }
 
 func uninstallPackageIndividually(entry InstallEntry) {
@@ -792,7 +797,5 @@ func uninstallPackageIndividually(entry InstallEntry) {
 }		
 
 func exit(status int) {
-	fmt.Println(trans("exit_app"))
-
 	os.Exit(status)
 }
