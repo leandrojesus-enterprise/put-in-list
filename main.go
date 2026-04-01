@@ -348,7 +348,7 @@ func clearTerminal() {
 }
 
 func showMainMenu() {
-	if !firstRun {
+	if firstRun {
 		fmt.Printf("           %v{%v %s %v}%v\n\n", Green, Reset, trans("welcome"), Green, Reset)
 		fmt.Println("          Press <Enter> to continue...")
 		fmt.Scanln()
