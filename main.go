@@ -554,7 +554,7 @@ func setupMainMenuChoices() {
 			case "snap":
 				cmd = exec.Command("snap", "remove", entry.Name)
 			default:
-				fmt.Printf("Instalador '%s' não suportado para o pacote '%s'.\n", entry.Installer, entry.Name)
+				fmt.Printf(trans("installer_not_supported"), entry.Installer, entry.Name)
 				continue
 			}
 
@@ -580,12 +580,12 @@ func setupMainMenuChoices() {
 	}
 
 	mainMenuChoices["5"] = func() {
-		if config.CurrentInstaller == trans("none") {
+		if config.CurrentInstaller == "None" {
 			fmt.Println(trans("no_installer_selected"))
 			return
 		}
 
-		if storedLists.ActiveList == trans("none") {
+		if storedLists.ActiveList == "None" {
 			fmt.Println(trans("no_active_list"))
 			return
 		}
