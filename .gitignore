@@ -119,6 +119,10 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,visualstudiocode,go
 
+# Project-specific
 config.json
 lists.json
 put-in-list-amd64
+
+# IDE
+.idea/

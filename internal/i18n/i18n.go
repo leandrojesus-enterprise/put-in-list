@@ -1,0 +1,180 @@
+package i18n
+
+type Lang string
+
+const (
+	EN Lang = "en"
+	PT Lang = "pt"
+	ES Lang = "es"
+)
+
+var translations = map[Lang]map[string]string{
+	EN: {
+		"app_initializing":               "** App initializing **",
+		"os_not_supported":               "Your operating system is not supported. Supported OS: windows, linux.",
+		"config_not_found":               "config.json not found! Will create one with default values.",
+		"config_read_error":              "Error reading config.json:",
+		"lists_not_found":                "lists.json not found! Will create one with default values.",
+		"lists_read_error":               "Error reading lists.json:",
+		"save_config_error":              "Error saving config.json:",
+		"save_config_error_marshal":      "Error marshaling config.json:",
+		"save_config_error_write":        "Error writing config.json:",
+		"create_list":                    "Create List",
+		"set_list_active":                "Set Active List",
+		"show_lists":                     "Show Lists",
+		"uninstall_list":                 "Uninstall List",
+		"install_packages":               "Install Packages",
+		"choose_installer":               "Choose Installer",
+		"search_package":                 "Search Package in Lists",
+		"change_language":                "Change Language",
+		"exit":                           "Exit",
+		"list_already_exists":            "List '%s' already exists!\n",
+		"enter_list_name":                "Enter the name of the new list: ",
+		"list_name_cannot_be_empty":      "List name cannot be empty!",
+		"available_lists":                "Available lists:",
+		"invalid_list_index":             "Invalid list index!",
+		"enter_list_index":               "Enter the index of the list to set as active: ",
+		"list_does_not_exist":            "List '%s' does not exist!\n",
+		"active_marker":                  " (active)",
+		"none":                           "None",
+		"list_is_empty":                  "List '%s' is empty.",
+		"delete_list_prompt":             "Do you want to delete the list? (y/n)",
+		"uninstall_list_prompt":          "Do you really want to uninstall this list? this will uninstall all packages in the list. (y/n)",
+		"uninstalling":                   "Uninstalling '%s' with '%s'...",
+		"error_uninstalling":             "Failed to uninstall '%s': %v\n",
+		"successfully_uninstalled":       "'%s' uninstalled successfully.\n",
+		"no_installer_selected":          "Error: no installer selected. Use option 6.",
+		"no_active_list":                 "Error: no active list. Use option 2.",
+		"package_name_prompt":            "Enter the name of the package to install: ",
+		"package_name_empty":             "Package name cannot be empty.",
+		"installing":                     "Installing '%s' with %s...\n",
+		"failed_to_install":              "Failed to install '%s': %v\n",
+		"wont_be_added_to_active_list":   "Will not be added to active list.",
+		"successfully_installed":         "'%s' installed successfully.\n",
+		"installed_added_to_list":        "'%s' [%s] added to active list '%s'.\n",
+		"package_already_exists":         "'%s' already exists in active list '%s' with installer '%s'.\n",
+		"supported_installers":           "Supported installers for %s: %s\n",
+		"no_available_installers":        "No available installers found in PATH.",
+		"install_installer_instructions": "To use this option, please install one of them or add it to your PATH.",
+		"available_installers":           "Available installers detected:",
+		"choose_installer_prompt":        "Choose the number of the installer to set as current: ",
+		"invalid_index":                  "Invalid index! Choose a valid installer number.",
+		"installer_set_current":          "Current installer set to: %s\n",
+		"package_search_prompt":          "Enter the name of the package you want to search for in all lists: ",
+		"package_found_in_list":          "Package '%s' found in list '%s' (installer=%s)\n",
+		"do_you_want_to_uninstall":       "Do you want to uninstall it? (y/n): ",
+		"package_not_found_in_any_list":  "Package '%s' not found in any list.\n",
+		"list_empty_prompt":              "List '%s' is now empty. Do you want to delete it? (y/n): ",
+		"package_removed_from_list":      "Package '%s' removed from list '%s'.\n",
+		"list_deleted":                   "List '%s' deleted.\n",
+		"language_changed":               "Language changed to %s.\n",
+		"uninstalling_package":           "Uninstalling '%s' with '%s'...\n",
+		"instlaller_not_supported":       "Installer '%s' not supported for package '%s'.\n",
+		"uninstall_failed":               "Failed to uninstall '%s': %v\n",
+		"uninstalled_successfully":       "'%s' uninstalled successfully.\n",
+		"exit_app":                       "Exiting the app!\nSee you soon.\n",
+		"welcome":                        "Welcome to Put In List",
+		"enter_choice":                   "Enter your choice:",
+		"invalid_choice":                 "Invalid choice! Enter a number between 1-9.",
+		"press_enter":                    "Press <Enter> to continue.",
+		"installer_not_set":              "No installer selected. Use option 6.",
+	},
+	PT: {
+		"app_initializing":               "** Aplicação inicializando **",
+		"os_not_supported":               "O seu sistema operacional não é suportado. Sistemas operacionais suportados: windows, linux.",
+		"config_not_found":               "config.json não foi encontrado! Será criado um com valores padrão.",
+		"config_read_error":              "Erro ao ler config.json:",
+		"lists_not_found":                "lists.json não foi encontrado! Será criado um com valores padrão.",
+		"lists_read_error":               "Erro ao ler lists.json:",
+		"save_config_error":              "Erro ao salvar config.json:",
+		"save_config_error_marshal":      "Erro ao serializar config.json:",
+		"save_config_error_write":        "Erro ao escrever config.json:",
+		"create_list":                    "Criar Lista",
+		"set_list_active":                "Definir Lista Ativa",
+		"show_lists":                     "Mostrar Listas",
+		"uninstall_list":                 "Desinstalar Lista",
+		"install_packages":               "Instalar Pacotes",
+		"choose_installer":               "Escolher Instalador",
+		"search_package":                 "Pesquisar Pacote em Listas",
+		"change_language":                "Alterar Idioma",
+		"exit":                           "Sair",
+		"list_already_exists":            "A lista '%s' já existe!\n",
+		"enter_list_name":                "Insira o nome da nova lista: ",
+		"list_name_cannot_be_empty":      "O nome da lista não pode ser vazio!",
+		"available_lists":                "Listas disponíveis:",
+		"invalid_list_index":             "Índice de lista inválido!",
+		"enter_list_index":               "Digite o índice da lista para definir como ativa: ",
+		"list_does_not_exist":            "A lista '%s' não existe!\n",
+		"active_marker":                  " (ativa)",
+		"none":                           "None",
+		"list_is_empty":                  "A lista '%s' está vazia.",
+		"delete_list_prompt":             "Você deseja excluir a lista? (y/n)",
+		"uninstall_list_prompt":          "Você realmente deseja desinstalar esta lista? Isso irá desinstalar todos os pacotes na lista. (y/n)",
+		"uninstalling":                   "Desinstalando '%s' com '%s'...",
+		"error_uninstalling":             "Falha ao desinstalar '%s': %v\n",
+		"successfully_uninstalled":       "'%s' desinstalado com sucesso.\n",
+		"no_installer_selected":          "Erro: Nenhum instalador selecionado. Usar opção 6.",
+		"no_active_list":                 "Erro: Nenhuma lista ativa. Usar opção 2.",
+		"package_name_prompt":            "Insira o nome do pacote para instalar: ",
+		"package_name_empty":             "O nome do pacote não pode ser vazio.",
+		"installing":                     "Instalando '%s' com %s...\n",
+		"failed_to_install":              "Falha ao instalar '%s': %v\n",
+		"wont_be_added_to_active_list":   "Não será adicionado à lista ativa.",
+		"successfully_installed":         "'%s' instalado com sucesso.\n",
+		"installed_added_to_list":        "'%s' [%s] adicionado à lista ativa '%s'.\n",
+		"package_already_exists":         "'%s' já existe na lista ativa '%s' com instalador '%s'.\n",
+		"supported_installers":           "Installers suportados para %s: %s\n",
+		"no_available_installers":        "Nenhum instalador disponível encontrado no PATH.",
+		"install_installer_instructions": "Para usar esta opção, por favor instale um deles ou adicione ao seu PATH.",
+		"available_installers":           "Installers disponíveis detectados:",
+		"choose_installer_prompt":        "Escolha o número do instalador para definir como atual: ",
+		"invalid_index":                  "Índice inválido! Escolha um número de instalador válido.",
+		"installer_set_current":          "Instalador atual definido para: %s\n",
+		"package_search_prompt":          "Insira o nome do pacote que você deseja pesquisar em todas as listas: ",
+		"package_found_in_list":          "Pacote '%s' encontrado na lista '%s' (installer=%s)\n",
+		"do_you_want_to_uninstall":       "Você deseja desinstalá-lo? (y/n): ",
+		"package_not_found_in_any_list":  "Pacote '%s' não encontrado em nenhuma lista.\n",
+		"list_empty_prompt":              "Lista '%s' está agora vazia. Você deseja excluí-la? (y/n): ",
+		"package_removed_from_list":      "Pacote '%s' removido da lista '%s'.\n",
+		"list_deleted":                   "Lista '%s' excluída.\n",
+		"language_changed":               "Idioma alterado para %s.\n",
+		"uninstalling_package":           "Desinstalando '%s' com '%s'...\n",
+		"instlaller_not_supported":       "Installer '%s' not supported for package '%s'.\n",
+		"uninstall_failed":               "Falha ao desinstalar '%s': %v\n",
+		"uninstalled_successfully":       "'%s' desinstalado com sucesso.\n",
+		"exit_app":                       "Saindo do aplicativo!\nAté mais.\n",
+		"welcome":                        "Bem-vindo ao Put In List",
+		"enter_choice":                   "Digite sua escolha:",
+		"invalid_choice":                 "Escolha inválida! Digite um número entre 1-9.",
+		"press_enter":                    "Pressione <Enter> para continuar.",
+		"installer_not_set":              "Nenhum instalador selecionado. Use a opção 6.",
+	},
+	ES: {
+		"welcome":           "Bienvenido a Put In List",
+		"enter_choice":      "Elige una opción:",
+		"invalid_choice":    "Opción inválida. Elige entre 1-8.",
+		"press_enter":       "Presiona <Enter> para continuar.",
+		"no_active_list":    "Ninguna lista activa. Usa la opción 2.",
+		"installer_not_set": "Ningún instalador seleccionado. Usa la opción 6.",
+	},
+}
+
+type Translator struct {
+	lang Lang
+}
+
+func New() *Translator {
+	return &Translator{lang: EN}
+}
+
+func (t *Translator) SetLang(l Lang) {
+	t.lang = l
+}
+
+func (t *Translator) Lang() Lang {
+	return t.lang
+}
+
+func (t *Translator) Trans(key string) string {
+	return translations[t.lang][key]
+}
