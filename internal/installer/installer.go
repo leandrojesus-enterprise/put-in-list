@@ -9,7 +9,7 @@ import (
 	"github.com/leandrojesus-enterprise/put-in-list/internal/storage"
 )
 
-var SupportedInstallers = map[string][]string{
+var SupportedInstallers map[string][]string = map[string][]string{
 	"windows": {"winget", "choco"},
 	"linux":   {"apt", "snap"},
 }
@@ -21,8 +21,10 @@ func NewService() *Service {
 }
 
 func (s *Service) DetectAvailable(osName string) []string {
-	available := []string{}
-	supported, ok := SupportedInstallers[osName]
+	var available []string = []string{}
+	var supported []string
+	var ok bool
+	supported, ok = SupportedInstallers[osName]
 	if !ok {
 		return available
 	}

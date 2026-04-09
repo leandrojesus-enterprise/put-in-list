@@ -53,7 +53,7 @@ func (m *Menu) ShowMain(activeList, currentInstaller string, firstRun bool) {
 
 func (m *Menu) ReadChoice() string {
 	fmt.Print("Enter your choice: ")
-	var choice string
+	var choice string = ""
 	fmt.Scanln(&choice)
 	return choice
 }

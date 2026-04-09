@@ -26,18 +26,21 @@ func NewJSONStore(path string) *JSONStore {
 }
 
 func (s *JSONStore) Load() (StoredLists, bool, error) {
-	result := StoredLists{
+	var result StoredLists = StoredLists{
 		ActiveList: "None",
 		Lists:      make(map[string][]InstallEntry),
 	}
 
-	f, err := os.Open(s.path)
+	var f *os.File
+	var err error
+	f, err = os.Open(s.path)
 	if err != nil {
 		return result, true, nil // first run
 	}
 	defer f.Close()
 
-	data, err := io.ReadAll(f)
+	var data []byte
+	data, err = io.ReadAll(f)
 	if err != nil {
 		return result, false, fmt.Errorf("error reading %s: %w", s.path, err)
 	}
@@ -50,7 +53,9 @@ func (s *JSONStore) Load() (StoredLists, bool, error) {
 }
 
 func (s *JSONStore) Save(data StoredLists) error {
-	b, err := json.Marshal(data)
+	var b []byte
+	var err error
+	b, err = json.Marshal(data)
 	if err != nil {
 		return err
 	}

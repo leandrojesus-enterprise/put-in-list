@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	CurrentInstaller string   `json:"currentInstaller"`
+	CurrentInstaller string    `json:"currentInstaller"`
 	Language         i18n.Lang `json:"language"`
 }
 
@@ -28,15 +28,18 @@ func (s *JSONService) SetTranslator(tr *i18n.Translator) {
 }
 
 func (s *JSONService) Load() (Config, bool, error) {
-	cfg := Config{CurrentInstaller: "None"}
+	var cfg Config = Config{CurrentInstaller: "None"}
 
-	f, err := os.Open(s.path)
+	var f *os.File
+	var err error
+	f, err = os.Open(s.path)
 	if err != nil {
 		return cfg, true, nil // first run
 	}
 	defer f.Close()
 
-	data, err := io.ReadAll(f)
+	var data []byte
+	data, err = io.ReadAll(f)
 	if err != nil {
 		return cfg, false, fmt.Errorf("%s %w", s.tr.Trans("config_read_error"), err)
 	}
@@ -49,7 +52,9 @@ func (s *JSONService) Load() (Config, bool, error) {
 }
 
 func (s *JSONService) Save(cfg Config) error {
-	data, err := json.MarshalIndent(cfg, "", "  ")
+	var data []byte
+	var err error
+	data, err = json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return fmt.Errorf("%s %w", s.tr.Trans("save_config_error_marshal"), err)
 	}

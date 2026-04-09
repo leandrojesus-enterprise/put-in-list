@@ -11,15 +11,15 @@ type Terminal struct {
 }
 
 func New() *Terminal {
-	t := &Terminal{}
+	var t *Terminal = &Terminal{}
 	t.clearFuncs = map[string]func(){
 		"windows": func() {
-			cmd := exec.Command("cmd", "/c", "cls")
+			var cmd *exec.Cmd = exec.Command("cmd", "/c", "cls")
 			cmd.Stdout = os.Stdout
 			cmd.Run()
 		},
 		"linux": func() {
-			cmd := exec.Command("clear")
+			var cmd *exec.Cmd = exec.Command("clear")
 			cmd.Stdout = os.Stdout
 			cmd.Run()
 		},

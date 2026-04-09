@@ -16,7 +16,7 @@ import (
 	"github.com/leandrojesus-enterprise/put-in-list/internal/terminal"
 )
 
-var supportedOS = []string{"windows", "linux"}
+var supportedOS []string = []string{"windows", "linux"}
 
 type App struct {
 	cfgSvc      *config.JSONService
@@ -55,7 +55,7 @@ func (a *App) Run() {
 		a.term.Clear()
 		a.ui.ShowMain(a.lists.ActiveList, a.cfg.CurrentInstaller, a.firstRun)
 		a.firstRun = false
-		choice := a.ui.ReadChoice()
+		var choice string = a.ui.ReadChoice()
 		a.runChoice(choice)
 		a.ui.Pause()
 	}
@@ -64,7 +64,7 @@ func (a *App) Run() {
 func (a *App) init() {
 	fmt.Println(a.tr.Trans("app_initializing"))
 
-	currentOS := runtime.GOOS
+	var currentOS string = runtime.GOOS
 	if !a.osSupported(currentOS) {
 		fmt.Println(a.tr.Trans("os_not_supported"))
 		a.ui.Pause()
@@ -73,7 +73,10 @@ func (a *App) init() {
 
 	a.cfgSvc.SetTranslator(a.tr)
 
-	cfg, isNew, err := a.cfgSvc.Load()
+	var cfg config.Config
+	var isNew bool
+	var err error
+	cfg, isNew, err = a.cfgSvc.Load()
 	if err != nil {
 		fmt.Println(err)
 		a.ui.Pause()
@@ -89,7 +92,8 @@ func (a *App) init() {
 		a.firstRun = true
 	}
 
-	lists, isNew, err := a.listSvc.Load()
+	var lists storage.StoredLists
+	lists, isNew, err = a.listSvc.Load()
 	if err != nil {
 		fmt.Println(a.tr.Trans("lists_read_error"), err)
 		a.ui.Pause()
@@ -179,12 +183,12 @@ func (a *App) setActiveList() {
 		return
 	}
 
-	listNames := make([]string, 0, len(a.lists.Lists))
+	var listNames []string = make([]string, 0, len(a.lists.Lists))
 	for name := range a.lists.Lists {
 		listNames = append(listNames, name)
 	}
 
-	listName := listNames[listIndex-1]
+	var listName string = listNames[listIndex-1]
 	if _, exists := a.lists.Lists[listName]; exists {
 		a.lists.ActiveList = listName
 		a.listSvc.Save(a.lists)
@@ -196,7 +200,7 @@ func (a *App) setActiveList() {
 func (a *App) showLists() {
 	fmt.Println(a.tr.Trans("available_lists"))
 	for listName, entries := range a.lists.Lists {
-		activeMarker := ""
+		var activeMarker string = ""
 		if listName == a.lists.ActiveList {
 			activeMarker = a.tr.Trans("active_marker")
 		}
@@ -213,7 +217,9 @@ func (a *App) uninstallList() {
 		return
 	}
 
-	entries, ok := a.lists.Lists[a.lists.ActiveList]
+	var entries []storage.InstallEntry
+	var ok bool
+	entries, ok = a.lists.Lists[a.lists.ActiveList]
 	if !ok {
 		fmt.Printf(a.tr.Trans("list_does_not_exist"), a.lists.ActiveList)
 		return
@@ -248,7 +254,7 @@ func (a *App) uninstallList() {
 	}
 
 	for i := len(entries) - 1; i >= 0; i-- {
-		entry := entries[i]
+		var entry storage.InstallEntry = entries[i]
 		fmt.Printf(a.tr.Trans("uninstalling"), entry.Name, entry.Installer)
 
 		if err := a.instSvc.Uninstall(entry, a.tr); err != nil {
@@ -280,31 +286,26 @@ func (a *App) installPackage() {
 	}
 
 	fmt.Print(a.tr.Trans("package_name_prompt"))
-	scanner := bufio.NewScanner(os.Stdin)
+	var scanner *bufio.Scanner = bufio.NewScanner(os.Stdin)
 	scanner.Scan()
-	pkg := scanner.Text()
+	var pkg string = scanner.Text()
 
 	if strings.TrimSpace(pkg) == "" {
 		fmt.Println(a.tr.Trans("package_name_empty"))
 		return
 	}
 
-	var classicInstallFlag bool
-	pkgSplit := strings.Split(pkg, " ")
-	pkgName := pkgSplit[0]
+	var pkgSplit []string = strings.Split(pkg, " ")
+	var pkgName string = pkgSplit[0]
 
-	var pkgArg string
+	var pkgArg string = ""
 	if len(pkgSplit) >= 2 {
 		pkgArg = pkgSplit[1]
 	}
 
-	if len(pkgSplit) == 2 && pkgArg == "--classic" {
-		classicInstallFlag = true
-	}
-
 	fmt.Printf(a.tr.Trans("installing"), pkgName, a.cfg.CurrentInstaller)
 
-	installCmd := a.buildInstallCmd(pkgName, pkg, classicInstallFlag)
+	var installCmd *exec.Cmd = a.buildInstallCmd(pkgName, pkgArg)
 	if installCmd == nil {
 		fmt.Printf("Installer '%s' not supported.\n", a.cfg.CurrentInstaller)
 		return
@@ -321,7 +322,7 @@ func (a *App) installPackage() {
 
 	fmt.Printf(a.tr.Trans("successfully_installed"), pkgName)
 
-	activeEntries := a.lists.Lists[a.lists.ActiveList]
+	var activeEntries []storage.InstallEntry = a.lists.Lists[a.lists.ActiveList]
 	for _, existing := range activeEntries {
 		if existing.Name == pkg && existing.Installer == a.cfg.CurrentInstaller {
 			fmt.Printf(a.tr.Trans("package_already_exists"), pkgName, a.lists.ActiveList, a.cfg.CurrentInstaller)
@@ -334,24 +335,37 @@ func (a *App) installPackage() {
 	fmt.Printf(a.tr.Trans("installed_added_to_list"), pkgName, a.cfg.CurrentInstaller, a.lists.ActiveList)
 }
 
-func (a *App) buildInstallCmd(pkgName, pkg string, classicFlag bool) *exec.Cmd {
+func (a *App) buildInstallCmd(pkgName, pkgArg string) *exec.Cmd {
 	switch a.cfg.CurrentInstaller {
 	case "winget":
-		return exec.Command("winget", "install", pkg)
+		if pkgArg != "" {
+			return exec.Command("winget", "install", pkgName, pkgArg)
+		}
+		return exec.Command("winget", "install", pkgName)
 	case "snap":
-		if classicFlag {
+		if pkgArg == "--classic" {
 			return exec.Command("snap", "install", pkgName, "--classic")
 		}
 		return exec.Command("snap", "install", pkgName)
+	case "apt":
+		if pkgArg != "" {
+			return exec.Command("sudo", "apt", "install", "-y", pkgArg, pkgName)
+		}
+		return exec.Command("sudo", "apt", "install", "-y", pkgName)
+	case "choco":
+		if pkgArg != "" {
+			return exec.Command("choco", "install", pkgName, pkgArg, "-y")
+		}
+		return exec.Command("choco", "install", pkgName, "-y")
 	default:
 		return nil
 	}
 }
 
 func (a *App) chooseInstaller() {
-	currentOS := runtime.GOOS
-	supported := installer.SupportedInstallers[currentOS]
-	available := a.instSvc.DetectAvailable(currentOS)
+	var currentOS string = runtime.GOOS
+	var supported []string = installer.SupportedInstallers[currentOS]
+	var available []string = a.instSvc.DetectAvailable(currentOS)
 
 	fmt.Printf(a.tr.Trans("supported_installers"), currentOS, strings.Join(supported, ", "))
 	if len(available) == 0 {
@@ -362,7 +376,7 @@ func (a *App) chooseInstaller() {
 
 	fmt.Println(a.tr.Trans("available_installers"))
 	for i, tool := range available {
-		currentMark := ""
+		var currentMark string = ""
 		if tool == a.cfg.CurrentInstaller {
 			currentMark = " (current)"
 		}
@@ -371,7 +385,8 @@ func (a *App) chooseInstaller() {
 
 	fmt.Print(a.tr.Trans("choose_installer_prompt"))
 	var opt int
-	_, err := fmt.Scanln(&opt)
+	var err error
+	_, err = fmt.Scanln(&opt)
 	if err != nil || opt < 1 || opt > len(available) {
 		fmt.Println(a.tr.Trans("invalid_index"))
 		return
@@ -388,7 +403,7 @@ func (a *App) searchPackage() {
 	fmt.Scanln(&packageName)
 	packageName = strings.ToLower(packageName)
 
-	found := false
+	var found bool = false
 	for listName, entries := range a.lists.Lists {
 		for _, entry := range entries {
 			if strings.ToLower(entry.Name) == packageName {
@@ -400,7 +415,7 @@ func (a *App) searchPackage() {
 				if strings.ToLower(confirm) == "y" {
 					a.instSvc.Uninstall(entry, a.tr)
 
-					updatedEntries := []storage.InstallEntry{}
+					var updatedEntries []storage.InstallEntry = []storage.InstallEntry{}
 					for _, e := range entries {
 						if !(strings.ToLower(e.Name) == packageName && e.Installer == entry.Installer) {
 							updatedEntries = append(updatedEntries, e)

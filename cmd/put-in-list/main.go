@@ -11,14 +11,14 @@ import (
 )
 
 func main() {
-	tr := i18n.New()
-	term := terminal.New()
-	ui := menu.New(term, tr)
+	var tr *i18n.Translator = i18n.New()
+	var term *terminal.Terminal = terminal.New()
+	var ui *menu.Menu = menu.New(term, tr)
 
-	cfgSvc := config.NewJSONService("config.json")
-	listSvc := storage.NewJSONStore("lists.json")
-	instSvc := installer.NewService()
+	var cfgSvc *config.JSONService = config.NewJSONService("config.json")
+	var listSvc *storage.JSONStore = storage.NewJSONStore("lists.json")
+	var instSvc *installer.Service = installer.NewService()
 
-	a := app.New(cfgSvc, listSvc, instSvc, ui, term, tr)
+	var a *app.App = app.New(cfgSvc, listSvc, instSvc, ui, term, tr)
 	a.Run()
 }
