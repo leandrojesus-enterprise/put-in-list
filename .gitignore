@@ -126,3 +126,6 @@ put-in-list-amd64
 
 # IDE
 .idea/
+
+# BUILD
+put-in-list
