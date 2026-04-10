@@ -48,14 +48,14 @@ func (m *Menu) ShowMain(activeList, currentInstaller, version string, firstRun b
 
 	// List management options.
 	fmt.Printf("1 %v»%v %s\n", Green, Reset, m.tr.Trans("create_list"))
-	fmt.Printf("2 %v»%v %s %v[%v Current: %s %v]%v\n", Green, Reset, m.tr.Trans("set_list_active"), Green, Reset, activeList, Green, Reset)
+	fmt.Printf("2 %v»%v %s %v[%v %s: %s %v]%v\n", Green, Reset, m.tr.Trans("set_list_active"), Green, Reset, m.tr.Trans("current"), activeList, Green, Reset)
 	fmt.Printf("3 %v»%v %s\n", Green, Reset, m.tr.Trans("show_lists"))
 	fmt.Printf("4 %v»%v %s\n", Green, Reset, m.tr.Trans("uninstall_list"))
 	fmt.Printf("%v-------------------------%v\n", Green, Reset)
 
 	// Package management options.
 	fmt.Printf("5 %v»%v %s\n", Green, Reset, m.tr.Trans("install_packages"))
-	fmt.Printf("6 %v»%v %s %v[%v Current: %s %v]%v\n", Green, Reset, m.tr.Trans("choose_installer"), Green, Reset, currentInstaller, Green, Reset)
+	fmt.Printf("6 %v»%v %s %v[%v %s: %s %v]%v\n", Green, Reset, m.tr.Trans("choose_installer"), Green, Reset, m.tr.Trans("current"), currentInstaller, Green, Reset)
 	fmt.Printf("7 %v»%v %s\n", Green, Reset, m.tr.Trans("search_package"))
 	fmt.Printf("%v-------------------------%v\n", Green, Reset)
 

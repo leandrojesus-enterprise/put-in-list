@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"runtime"
 	"strings"
+	"sync/atomic"
+	"syscall"
 
 	"github.com/leandrojesus-enterprise/put-in-list/internal/config"
 	"github.com/leandrojesus-enterprise/put-in-list/internal/i18n"
@@ -33,6 +36,7 @@ type App struct {
 	firstRun    bool
 	menuChoices map[string]func()
 	version     string
+	installing  atomic.Bool
 }
 
 // New creates a new App instance wiring all provided service dependencies.
@@ -60,6 +64,26 @@ func New(
 // repeatedly displaying the menu and handling user choices.
 func (a *App) Run() {
 	a.init()
+
+	var sigCh chan os.Signal = make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		for {
+			<-sigCh
+			fmt.Println()
+			if a.installing.Load() {
+				fmt.Println(a.tr.Trans("install_interrupt_warning"))
+				fmt.Print(a.tr.Trans("install_interrupt_confirm"))
+				var confirm string
+				fmt.Scanln(&confirm)
+				if strings.ToLower(confirm) != "y" {
+					continue
+				}
+			}
+			a.exitApp()
+		}
+	}()
+
 	for {
 		a.term.Clear()
 		a.ui.ShowMain(a.lists.ActiveList, a.cfg.CurrentInstaller, a.version, a.firstRun)
@@ -347,8 +371,12 @@ func (a *App) installPackage() {
 	installCmd.Stdout = os.Stdout
 	installCmd.Stderr = os.Stderr
 
-	if err := installCmd.Run(); err != nil {
-		fmt.Printf(a.tr.Trans("failed_to_install"), pkgName, err)
+	a.installing.Store(true)
+	var installErr error = installCmd.Run()
+	a.installing.Store(false)
+
+	if installErr != nil {
+		fmt.Printf(a.tr.Trans("failed_to_install"), pkgName, installErr)
 		fmt.Println(a.tr.Trans("wont_be_added_to_active_list"))
 		return
 	}

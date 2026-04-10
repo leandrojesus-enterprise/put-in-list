@@ -83,6 +83,9 @@ var translations = map[Lang]map[string]string{
 		"press_enter":                    "Press <Enter> to continue.",
 		"installer_not_set":              "No installer selected. Use option 6.",
 		"invalid_option":                 "Invalid option!",
+		"current":                        "Current",
+		"install_interrupt_warning":      "Warning: a package installation is in progress. Quitting now may leave the system in an inconsistent state.",
+		"install_interrupt_confirm":      "Do you really want to quit? (y/n): ",
 	},
 	PT: {
 		"app_initializing":               "** Aplicação inicializando **",
@@ -154,6 +157,9 @@ var translations = map[Lang]map[string]string{
 		"press_enter":                    "Pressione <Enter> para continuar.",
 		"installer_not_set":              "Nenhum instalador selecionado. Use a opção 6.",
 		"invalid_option":                 "Opção inválida!",
+		"current":                        "Atual",
+		"install_interrupt_warning":      "Aviso: uma instalação de pacote está em curso. Sair agora pode deixar o sistema num estado inconsistente.",
+		"install_interrupt_confirm":      "Tem a certeza que quer sair? (y/n): ",
 	},
 	ES: {
 		"app_initializing":               "** Iniciando la aplicación **",
@@ -225,6 +231,9 @@ var translations = map[Lang]map[string]string{
 		"press_enter":                    "Presiona <Enter> para continuar.",
 		"installer_not_set":              "Ningún instalador seleccionado. Usa la opción 6.",
 		"invalid_option":                 "¡Opción inválida!",
+		"current":                        "Actual",
+		"install_interrupt_warning":      "Advertencia: hay una instalación en curso. Salir ahora puede dejar el sistema en un estado inconsistente.",
+		"install_interrupt_confirm":      "¿Realmente deseas salir? (y/n): ",
 	},
 }
 
