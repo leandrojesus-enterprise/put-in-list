@@ -1,13 +1,17 @@
+// Package i18n provides a simple key-based translation system for put-in-list.
 package i18n
 
+// Lang is a language code used to select a translation table.
 type Lang string
 
+// Supported language codes.
 const (
 	EN Lang = "en"
 	PT Lang = "pt"
 	ES Lang = "es"
 )
 
+// translations is the static lookup table for all UI strings, keyed by language then message key.
 var translations = map[Lang]map[string]string{
 	EN: {
 		"app_initializing":               "** App initializing **",
@@ -224,22 +228,28 @@ var translations = map[Lang]map[string]string{
 	},
 }
 
+// Translator holds the active language and exposes translation lookup.
 type Translator struct {
 	lang Lang
 }
 
+// New creates a Translator defaulting to English.
 func New() *Translator {
 	return &Translator{lang: EN}
 }
 
+// SetLang changes the active language used for all subsequent Trans calls.
 func (t *Translator) SetLang(l Lang) {
 	t.lang = l
 }
 
+// Lang returns the currently active language code.
 func (t *Translator) Lang() Lang {
 	return t.lang
 }
 
+// Trans looks up key in the active language's translation table and returns the string.
+// Returns an empty string if the key is not found.
 func (t *Translator) Trans(key string) string {
 	return translations[t.lang][key]
 }

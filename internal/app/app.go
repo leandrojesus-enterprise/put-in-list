@@ -1,3 +1,4 @@
+// Package app contains the core application logic for put-in-list.
 package app
 
 import (
@@ -16,8 +17,10 @@ import (
 	"github.com/leandrojesus-enterprise/put-in-list/internal/terminal"
 )
 
+// supportedOS lists the operating systems that put-in-list can run on.
 var supportedOS []string = []string{"windows", "linux"}
 
+// App is the main application struct that holds all service dependencies and runtime state.
 type App struct {
 	cfgSvc      *config.JSONService
 	listSvc     *storage.JSONStore
@@ -29,8 +32,10 @@ type App struct {
 	lists       storage.StoredLists
 	firstRun    bool
 	menuChoices map[string]func()
+	version     string
 }
 
+// New creates a new App instance wiring all provided service dependencies.
 func New(
 	cfgSvc *config.JSONService,
 	listSvc *storage.JSONStore,
@@ -38,6 +43,7 @@ func New(
 	ui *menu.Menu,
 	term *terminal.Terminal,
 	tr *i18n.Translator,
+	version string,
 ) *App {
 	return &App{
 		cfgSvc:  cfgSvc,
@@ -46,14 +52,17 @@ func New(
 		ui:      ui,
 		term:    term,
 		tr:      tr,
+		version: version,
 	}
 }
 
+// Run initializes the app and enters the main interactive loop,
+// repeatedly displaying the menu and handling user choices.
 func (a *App) Run() {
 	a.init()
 	for {
 		a.term.Clear()
-		a.ui.ShowMain(a.lists.ActiveList, a.cfg.CurrentInstaller, a.firstRun)
+		a.ui.ShowMain(a.lists.ActiveList, a.cfg.CurrentInstaller, a.version, a.firstRun)
 		a.firstRun = false
 		var choice string = a.ui.ReadChoice()
 		a.runChoice(choice)
@@ -61,9 +70,12 @@ func (a *App) Run() {
 	}
 }
 
+// init loads config and list data from disk, validates the OS,
+// sets the language, and registers menu action handlers.
 func (a *App) init() {
 	fmt.Println(a.tr.Trans("app_initializing"))
 
+	// Ensure the current OS is supported before proceeding.
 	var currentOS string = runtime.GOOS
 	if !a.osSupported(currentOS) {
 		fmt.Println(a.tr.Trans("os_not_supported"))
@@ -73,6 +85,7 @@ func (a *App) init() {
 
 	a.cfgSvc.SetTranslator(a.tr)
 
+	// Load or create the application config file.
 	var cfg config.Config
 	var isNew bool
 	var err error
@@ -84,6 +97,7 @@ func (a *App) init() {
 	}
 	a.cfg = cfg
 	if isNew {
+		// Config didn't exist; create a default one and flag as first run.
 		fmt.Println(a.tr.Trans("config_not_found"))
 		a.ui.Pause()
 		if err := a.cfgSvc.Save(a.cfg); err != nil {
@@ -92,6 +106,7 @@ func (a *App) init() {
 		a.firstRun = true
 	}
 
+	// Load or create the lists storage file.
 	var lists storage.StoredLists
 	lists, isNew, err = a.listSvc.Load()
 	if err != nil {
@@ -108,6 +123,7 @@ func (a *App) init() {
 		}
 	}
 
+	// Default to English if no language is configured.
 	if a.cfg.Language == "" {
 		a.cfg.Language = i18n.EN
 	}
@@ -116,6 +132,7 @@ func (a *App) init() {
 	a.setupMenuChoices()
 }
 
+// osSupported returns true if the given OS name is in the supported list.
 func (a *App) osSupported(os string) bool {
 	for _, s := range supportedOS {
 		if os == s {
@@ -125,6 +142,7 @@ func (a *App) osSupported(os string) bool {
 	return false
 }
 
+// runChoice dispatches menu choices "1"–"9" to their registered handlers.
 func (a *App) runChoice(choice string) {
 	if choice >= "1" && choice <= "9" {
 		a.menuChoices[choice]()
@@ -133,6 +151,7 @@ func (a *App) runChoice(choice string) {
 	}
 }
 
+// setupMenuChoices maps digit keys to their corresponding action methods.
 func (a *App) setupMenuChoices() {
 	a.menuChoices = map[string]func(){
 		"1": a.createList,
@@ -147,6 +166,7 @@ func (a *App) setupMenuChoices() {
 	}
 }
 
+// createList prompts for a name and adds a new empty list to storage.
 func (a *App) createList() {
 	fmt.Print(a.tr.Trans("enter_list_name"))
 	var listName string
@@ -166,6 +186,7 @@ func (a *App) createList() {
 	a.listSvc.Save(a.lists)
 }
 
+// setActiveList displays all lists and lets the user select one as the active list.
 func (a *App) setActiveList() {
 	fmt.Println(a.tr.Trans("available_lists"))
 	i := 1
@@ -183,6 +204,7 @@ func (a *App) setActiveList() {
 		return
 	}
 
+	// Collect list names to resolve the numeric index to a name.
 	var listNames []string = make([]string, 0, len(a.lists.Lists))
 	for name := range a.lists.Lists {
 		listNames = append(listNames, name)
@@ -197,6 +219,7 @@ func (a *App) setActiveList() {
 	}
 }
 
+// showLists prints all lists with their entries, marking the active list.
 func (a *App) showLists() {
 	fmt.Println(a.tr.Trans("available_lists"))
 	for listName, entries := range a.lists.Lists {
@@ -211,6 +234,8 @@ func (a *App) showLists() {
 	}
 }
 
+// uninstallList runs the uninstaller for every package in the active list,
+// then optionally deletes the list from storage.
 func (a *App) uninstallList() {
 	if a.lists.ActiveList == a.tr.Trans("none") {
 		fmt.Println(a.tr.Trans("no_active_list"))
@@ -225,6 +250,7 @@ func (a *App) uninstallList() {
 		return
 	}
 
+	// If the list is already empty, offer to delete it without running any uninstaller.
 	if len(entries) == 0 {
 		fmt.Printf(a.tr.Trans("list_is_empty"), a.lists.ActiveList)
 		fmt.Print(a.tr.Trans("delete_list_prompt"))
@@ -238,6 +264,7 @@ func (a *App) uninstallList() {
 		return
 	}
 
+	// Confirm before uninstalling all packages.
 	fmt.Print(a.tr.Trans("uninstall_list_prompt"))
 	var response string
 	fmt.Scanln(&response)
@@ -245,6 +272,7 @@ func (a *App) uninstallList() {
 		return
 	}
 
+	// Optionally delete the list from storage after uninstalling.
 	fmt.Print(a.tr.Trans("delete_list_prompt"))
 	fmt.Scanln(&response)
 	if strings.ToLower(response) == "y" || strings.ToLower(response) == "yes" {
@@ -253,6 +281,7 @@ func (a *App) uninstallList() {
 		a.listSvc.Save(a.lists)
 	}
 
+	// Uninstall in reverse order so dependencies are removed correctly.
 	for i := len(entries) - 1; i >= 0; i-- {
 		var entry storage.InstallEntry = entries[i]
 		fmt.Printf(a.tr.Trans("uninstalling"), entry.Name, entry.Installer)
@@ -274,6 +303,8 @@ func (a *App) uninstallList() {
 	}
 }
 
+// installPackage installs a single package using the configured installer
+// and records it in the active list on success.
 func (a *App) installPackage() {
 	if a.cfg.CurrentInstaller == "None" {
 		fmt.Println(a.tr.Trans("no_installer_selected"))
@@ -285,6 +316,7 @@ func (a *App) installPackage() {
 		return
 	}
 
+	// Use a bufio.Scanner so package names with spaces are read correctly.
 	fmt.Print(a.tr.Trans("package_name_prompt"))
 	var scanner *bufio.Scanner = bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -295,6 +327,7 @@ func (a *App) installPackage() {
 		return
 	}
 
+	// The first token is the package name; an optional second token is an extra flag.
 	var pkgSplit []string = strings.Split(pkg, " ")
 	var pkgName string = pkgSplit[0]
 
@@ -322,6 +355,7 @@ func (a *App) installPackage() {
 
 	fmt.Printf(a.tr.Trans("successfully_installed"), pkgName)
 
+	// Skip adding the package if it's already tracked in the active list.
 	var activeEntries []storage.InstallEntry = a.lists.Lists[a.lists.ActiveList]
 	for _, existing := range activeEntries {
 		if existing.Name == pkg && existing.Installer == a.cfg.CurrentInstaller {
@@ -335,6 +369,8 @@ func (a *App) installPackage() {
 	fmt.Printf(a.tr.Trans("installed_added_to_list"), pkgName, a.cfg.CurrentInstaller, a.lists.ActiveList)
 }
 
+// buildInstallCmd constructs the OS-level install command for the configured installer.
+// Returns nil if the installer is not recognised.
 func (a *App) buildInstallCmd(pkgName, pkgArg string) *exec.Cmd {
 	switch a.cfg.CurrentInstaller {
 	case "winget":
@@ -362,6 +398,8 @@ func (a *App) buildInstallCmd(pkgName, pkgArg string) *exec.Cmd {
 	}
 }
 
+// chooseInstaller lists available package managers for the current OS
+// and lets the user select one to use for future installs.
 func (a *App) chooseInstaller() {
 	var currentOS string = runtime.GOOS
 	var supported []string = installer.SupportedInstallers[currentOS]
@@ -397,6 +435,8 @@ func (a *App) chooseInstaller() {
 	fmt.Printf(a.tr.Trans("installer_set_current"), a.cfg.CurrentInstaller)
 }
 
+// searchPackage looks for a package by name across all lists and
+// optionally uninstalls it and removes it from storage.
 func (a *App) searchPackage() {
 	fmt.Print(a.tr.Trans("package_search_prompt"))
 	var packageName string
@@ -415,6 +455,7 @@ func (a *App) searchPackage() {
 				if strings.ToLower(confirm) == "y" {
 					a.instSvc.Uninstall(entry, a.tr)
 
+					// Rebuild the entry slice without the uninstalled package.
 					var updatedEntries []storage.InstallEntry = []storage.InstallEntry{}
 					for _, e := range entries {
 						if !(strings.ToLower(e.Name) == packageName && e.Installer == entry.Installer) {
@@ -425,6 +466,7 @@ func (a *App) searchPackage() {
 					a.listSvc.Save(a.lists)
 					fmt.Printf(a.tr.Trans("package_removed_from_list"), packageName, listName)
 
+					// Offer to delete the list if it became empty.
 					if len(updatedEntries) == 0 {
 						fmt.Printf(a.tr.Trans("list_empty_prompt"), listName)
 						var delConfirm string
@@ -446,6 +488,7 @@ func (a *App) searchPackage() {
 	}
 }
 
+// changeLanguage lets the user pick a display language and persists it to config.
 func (a *App) changeLanguage() {
 	fmt.Println("1 - English")
 	fmt.Println("2 - Português")
@@ -471,6 +514,7 @@ func (a *App) changeLanguage() {
 	fmt.Printf(a.tr.Trans("language_changed"), a.tr.Lang())
 }
 
+// exitApp prints a goodbye message and terminates the process.
 func (a *App) exitApp() {
 	fmt.Print(a.tr.Trans("exit_app"))
 	os.Exit(0)

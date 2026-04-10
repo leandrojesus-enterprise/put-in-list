@@ -1,3 +1,4 @@
+// Package storage handles persisting and loading the user's package lists.
 package storage
 
 import (
@@ -7,24 +8,31 @@ import (
 	"os"
 )
 
+// InstallEntry records a single package that was installed via put-in-list.
 type InstallEntry struct {
-	Name      string `json:"name"`
-	Installer string `json:"installer"`
+	Name      string `json:"name"`      // Package name as passed to the installer.
+	Installer string `json:"installer"` // The installer used (e.g. "apt", "winget").
 }
 
+// StoredLists is the top-level structure persisted to lists.json.
 type StoredLists struct {
-	ActiveList string                    `json:"activeList"`
-	Lists      map[string][]InstallEntry `json:"lists"`
+	ActiveList string                    `json:"activeList"` // Name of the currently active list.
+	Lists      map[string][]InstallEntry `json:"lists"`      // All named lists and their entries.
 }
 
+// JSONStore reads and writes StoredLists to a JSON file at a given path.
 type JSONStore struct {
 	path string
 }
 
+// NewJSONStore creates a JSONStore that operates on the file at path.
 func NewJSONStore(path string) *JSONStore {
 	return &JSONStore{path: path}
 }
 
+// Load reads the lists file and deserialises it into StoredLists.
+// The second return value is true when the file does not exist (first run),
+// in which case a default StoredLists and nil error are returned.
 func (s *JSONStore) Load() (StoredLists, bool, error) {
 	var result StoredLists = StoredLists{
 		ActiveList: "None",
@@ -35,7 +43,7 @@ func (s *JSONStore) Load() (StoredLists, bool, error) {
 	var err error
 	f, err = os.Open(s.path)
 	if err != nil {
-		return result, true, nil // first run
+		return result, true, nil // file absent → treat as first run
 	}
 	defer f.Close()
 
@@ -52,6 +60,7 @@ func (s *JSONStore) Load() (StoredLists, bool, error) {
 	return result, false, nil
 }
 
+// Save serialises data as JSON and writes it to the lists file.
 func (s *JSONStore) Save(data StoredLists) error {
 	var b []byte
 	var err error
