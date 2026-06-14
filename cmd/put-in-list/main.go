@@ -24,6 +24,6 @@ func main() {
 	var instSvc *installer.Service = installer.NewService()
 
 	// Wire everything into the app and start the main loop.
-	var a *app.App = app.New(cfgSvc, listSvc, instSvc, ui, term, tr, Version)
+	var a *app.App = app.New(cfgSvc, listSvc, instSvc, ui, term, tr)
 	a.Run()
 }

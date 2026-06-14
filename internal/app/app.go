@@ -35,7 +35,6 @@ type App struct {
 	lists       storage.StoredLists
 	firstRun    bool
 	menuChoices map[string]func()
-	version     string
 	installing  atomic.Bool
 }
 
@@ -47,7 +46,6 @@ func New(
 	ui *menu.Menu,
 	term *terminal.Terminal,
 	tr *i18n.Translator,
-	version string,
 ) *App {
 	return &App{
 		cfgSvc:  cfgSvc,
@@ -56,7 +54,6 @@ func New(
 		ui:      ui,
 		term:    term,
 		tr:      tr,
-		version: version,
 	}
 }
 
@@ -86,7 +83,7 @@ func (a *App) Run() {
 
 	for {
 		a.term.Clear()
-		a.ui.ShowMain(a.lists.ActiveList, a.cfg.CurrentInstaller, a.version, a.firstRun)
+		a.ui.ShowMain(a.lists.ActiveList, a.cfg.CurrentInstaller, a.firstRun)
 		a.firstRun = false
 		var choice string = a.ui.ReadChoice()
 		a.runChoice(choice)

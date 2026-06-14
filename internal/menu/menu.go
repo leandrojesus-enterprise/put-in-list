@@ -33,8 +33,8 @@ func New(term *terminal.Terminal, tr *i18n.Translator) *Menu {
 }
 
 // ShowMain renders the main menu, displaying the active list, current installer,
-// app version, and a welcome message on the very first run.
-func (m *Menu) ShowMain(activeList, currentInstaller, version string, firstRun bool) {
+// and a welcome message on the very first run.
+func (m *Menu) ShowMain(activeList, currentInstaller string, firstRun bool) {
 	if firstRun {
 		// Display a one-time welcome banner and wait for the user to acknowledge it.
 		fmt.Printf("           %v{%v %s %v}%v\n\n", Green, Reset, m.tr.Trans("welcome"), Green, Reset)
@@ -43,8 +43,8 @@ func (m *Menu) ShowMain(activeList, currentInstaller, version string, firstRun b
 		m.term.Clear()
 	}
 
-	// Header with app name and version.
-	fmt.Printf("%v{%v Put In List %v}%v %v%s%v\n\n", Green, Reset, Green, Reset, Gray, version, Reset)
+	// Header with app name.
+	fmt.Printf("%v{%v Put In List %v}%v\n\n", Green, Reset, Green, Reset)
 
 	// List management options.
 	fmt.Printf("1 %v»%v %s\n", Green, Reset, m.tr.Trans("create_list"))
